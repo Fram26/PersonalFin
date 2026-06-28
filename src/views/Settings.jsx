@@ -7,6 +7,7 @@ export default function Settings({ settings, onSave, onClose }) {
   const [pw, setPw] = useState(String(settings.pctWants))
   const [ps, setPs] = useState(String(settings.pctSavings))
   const [notify, setNotify] = useState(settings.notify)
+  const [notifyDay, setNotifyDay] = useState(String(settings.notifyDay))
 
   const sum = (parseInt(pn) || 0) + (parseInt(pw) || 0) + (parseInt(ps) || 0)
 
@@ -31,6 +32,7 @@ export default function Settings({ settings, onSave, onClose }) {
       pctWants: parseInt(pw) || 0,
       pctSavings: parseInt(ps) || 0,
       notify,
+      notifyDay: Math.min(28, Math.max(1, parseInt(notifyDay) || 28)),
     })
     onSave(next)
     onClose()
@@ -56,11 +58,15 @@ export default function Settings({ settings, onSave, onClose }) {
         <div className="toggle">
           <div>
             <div>Igakuine meeldetuletus</div>
-            <div className="sub">Telefon küsib luba teavitusteks</div>
+            <div className="sub">Teavitus kui kuu andmed sisestamata</div>
           </div>
           <button className="btn ghost auto" onClick={requestNotify}>
             {notify ? 'Lubatud ✓' : 'Luba'}
           </button>
+        </div>
+        <div className="field" style={{ marginTop: '0.9rem' }}>
+          <label>Meeldetuletuse päev (kuu päev 1–28)</label>
+          <input type="text" inputMode="numeric" value={notifyDay} onChange={(e) => setNotifyDay(e.target.value)} />
         </div>
       </div>
 

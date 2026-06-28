@@ -23,6 +23,8 @@ export const DEFAULT_SETTINGS = {
   pctWants: 30,
   pctSavings: 20,
   notify: false,
+  notifyDay: 28,
+  lastNotified: '',
   seeded: false,
 }
 

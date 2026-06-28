@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getSettings } from './db'
+import { getSettings, saveSettings, listMonths } from './db'
+import { dueMonth, fireNotification } from './reminder'
+import { monthLabel } from './util'
 import Month from './views/Month'
 import Bills from './views/Bills'
 import Invest from './views/Invest'
@@ -18,9 +20,20 @@ const TABS = [
 export default function App() {
   const [view, setView] = useState('month')
   const [settings, setSettings] = useState(null)
+  const [reminder, setReminder] = useState(null)
 
   useEffect(() => {
-    getSettings().then(setSettings)
+    Promise.all([getSettings(), listMonths()]).then(([s, months]) => {
+      setSettings(s)
+      const due = dueMonth(s, months.map((m) => m.month))
+      if (due) {
+        setReminder(due)
+        if (s.notify && s.lastNotified !== due) {
+          fireNotification(due)
+          saveSettings({ lastNotified: due }).then(setSettings)
+        }
+      }
+    })
   }, [])
 
   if (!settings) return null
@@ -33,6 +46,14 @@ export default function App() {
           <Icon name="settings" size={22} />
         </button>
       </div>
+
+      {reminder && view !== 'month' && (
+        <button className="reminder" onClick={() => { setView('month'); setReminder(null) }}>
+          <Icon name="month" size={18} />
+          <span>Sisesta {monthLabel(reminder)} andmed</span>
+          <span className="reminder-go">Ava ›</span>
+        </button>
+      )}
 
       {view === 'month' && <Month settings={settings} />}
       {view === 'bills' && <Bills />}
