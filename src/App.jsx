@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getSettings, saveSettings, listMonths } from './db'
+import { getSettings, saveSettings, listMonths, lock } from './db'
 import { dueMonth, fireNotification } from './reminder'
 import { monthLabel } from './util'
+import Lock from './Lock'
 import Month from './views/Month'
 import Bills from './views/Bills'
 import Invest from './views/Invest'
@@ -18,6 +19,14 @@ const TABS = [
 ]
 
 export default function App() {
+  const [unlocked, setUnlocked] = useState(false)
+
+  if (!unlocked) return <Lock onUnlocked={() => setUnlocked(true)} />
+
+  return <Main onLock={() => { lock(); setUnlocked(false) }} />
+}
+
+function Main({ onLock }) {
   const [view, setView] = useState('month')
   const [settings, setSettings] = useState(null)
   const [reminder, setReminder] = useState(null)
@@ -60,7 +69,12 @@ export default function App() {
       {view === 'invest' && <Invest />}
       {view === 'history' && <History settings={settings} />}
       {view === 'settings' && (
-        <Settings settings={settings} onSave={setSettings} onClose={() => setView('month')} />
+        <Settings
+          settings={settings}
+          onSave={setSettings}
+          onClose={() => setView('month')}
+          onLock={onLock}
+        />
       )}
 
       <nav className="nav">

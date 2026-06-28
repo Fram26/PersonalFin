@@ -4,6 +4,50 @@
   padding: 0.25rem 1.1rem 6rem;
 }
 
+/* lock screen */
+.lock {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.lock-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.6rem;
+  box-shadow: 0 8px 30px rgba(23, 26, 25, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-align: center;
+}
+.lock-card h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.03em;
+}
+.lock-card .sub {
+  margin: 0 0 0.4rem;
+}
+.lock-card input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+.lock-card .btn {
+  margin-top: 0.3rem;
+}
+.lock-warn {
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
 /* topbar */
 .topbar {
   display: flex;

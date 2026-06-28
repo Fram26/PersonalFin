@@ -1,23 +1,9 @@
-import Dexie from 'dexie'
-import { SEED_BILLS, SEED_ACCOUNTS } from './seed'
+import { deriveKey, encryptJSON, decryptJSON, randomBytes, toB64, fromB64 } from './crypto'
 
-export const db = new Dexie('personalfin')
-
-db.version(1).stores({
-  settings: 'key',
-  months: 'month',
-})
-
-db.version(2).stores({
-  settings: 'key',
-  months: 'month',
-  bills: '++id, bucket',
-  accounts: '++id, group',
-  snapshots: '[accountId+month], accountId, month',
-})
+const SALT_KEY = 'pf_salt'
+const VAULT_KEY = 'pf_vault'
 
 export const DEFAULT_SETTINGS = {
-  key: 'main',
   income: 0,
   pctNeeds: 50,
   pctWants: 30,
@@ -25,99 +11,143 @@ export const DEFAULT_SETTINGS = {
   notify: false,
   notifyDay: 28,
   lastNotified: '',
-  seeded: false,
 }
 
-export async function resetAll() {
-  await Promise.all([
-    db.bills.clear(),
-    db.accounts.clear(),
-    db.snapshots.clear(),
-    db.months.clear(),
-  ])
-  const fresh = { ...DEFAULT_SETTINGS, seeded: true }
-  await db.settings.put(fresh)
-  return fresh
+let key = null
+let vault = null
+
+function emptyVault() {
+  return { settings: { ...DEFAULT_SETTINGS }, months: [], bills: [], accounts: [], snapshots: [], seq: 1 }
 }
 
+export function hasVault() {
+  return !!localStorage.getItem(VAULT_KEY)
+}
+export function isUnlocked() {
+  return !!vault
+}
+
+async function persist() {
+  localStorage.setItem(VAULT_KEY, await encryptJSON(key, vault))
+}
+
+export async function setupPassword(password) {
+  // eemalda vana krüpteerimata andmebaas
+  try {
+    indexedDB.deleteDatabase('personalfin')
+  } catch {
+    // ignore
+  }
+  const salt = randomBytes(16)
+  localStorage.setItem(SALT_KEY, toB64(salt))
+  key = await deriveKey(password, salt)
+  vault = emptyVault()
+  await persist()
+}
+
+export async function unlock(password) {
+  const sb = localStorage.getItem(SALT_KEY)
+  if (!sb) throw new Error('no-vault')
+  key = await deriveKey(password, fromB64(sb))
+  const decoded = await decryptJSON(key, localStorage.getItem(VAULT_KEY)) // viskab kui vale parool
+  vault = {
+    ...emptyVault(),
+    ...decoded,
+    settings: { ...DEFAULT_SETTINGS, ...(decoded.settings || {}) },
+  }
+}
+
+export function lock() {
+  key = null
+  vault = null
+}
+
+// --- settings ---
 export async function getSettings() {
-  let s = await db.settings.get('main')
-  if (!s) {
-    s = { ...DEFAULT_SETTINGS }
-    await db.settings.put(s)
-  }
-  if (!s.seeded) {
-    await seedData()
-    s = await db.settings.get('main')
-  }
-  return s
+  return vault.settings
 }
-
-async function seedData() {
-  const billCount = await db.bills.count()
-  if (billCount === 0) await db.bills.bulkAdd(SEED_BILLS)
-  const accCount = await db.accounts.count()
-  if (accCount === 0) await db.accounts.bulkAdd(SEED_ACCOUNTS)
-  await db.settings.update('main', { seeded: true })
-}
-
 export async function saveSettings(patch) {
-  const current = await getSettings()
-  const next = { ...current, ...patch, key: 'main' }
-  await db.settings.put(next)
-  return next
+  vault.settings = { ...vault.settings, ...patch }
+  await persist()
+  return vault.settings
 }
 
 // --- months ---
 export async function saveMonth(entry) {
-  await db.months.put({ ...entry, updatedAt: Date.now() })
+  const i = vault.months.findIndex((m) => m.month === entry.month)
+  const rec = { ...entry, updatedAt: Date.now() }
+  if (i >= 0) vault.months[i] = rec
+  else vault.months.push(rec)
+  await persist()
 }
-export function getMonth(month) {
-  return db.months.get(month)
+export async function getMonth(month) {
+  return vault.months.find((m) => m.month === month)
 }
-export function listMonths() {
-  return db.months.orderBy('month').reverse().toArray()
+export async function listMonths() {
+  return [...vault.months].sort((a, b) => b.month.localeCompare(a.month))
 }
 
 // --- bills ---
-export function listBills() {
-  return db.bills.toArray()
+export async function listBills() {
+  return [...vault.bills]
 }
-export function addBill(bill) {
-  return db.bills.add({ active: true, ...bill })
+export async function addBill(bill) {
+  const rec = { id: vault.seq++, active: true, ...bill }
+  vault.bills.push(rec)
+  await persist()
+  return rec.id
 }
-export function updateBill(id, patch) {
-  return db.bills.update(id, patch)
+export async function updateBill(id, patch) {
+  const b = vault.bills.find((x) => x.id === id)
+  if (b) Object.assign(b, patch)
+  await persist()
 }
-export function deleteBill(id) {
-  return db.bills.delete(id)
+export async function deleteBill(id) {
+  vault.bills = vault.bills.filter((b) => b.id !== id)
+  await persist()
 }
 
 // --- accounts ---
-export function listAccounts() {
-  return db.accounts.toArray()
+export async function listAccounts() {
+  return [...vault.accounts]
 }
-export function addAccount(acc) {
-  return db.accounts.add(acc)
+export async function addAccount(acc) {
+  const rec = { id: vault.seq++, ...acc }
+  vault.accounts.push(rec)
+  await persist()
+  return rec.id
 }
-export function updateAccount(id, patch) {
-  return db.accounts.update(id, patch)
+export async function updateAccount(id, patch) {
+  const a = vault.accounts.find((x) => x.id === id)
+  if (a) Object.assign(a, patch)
+  await persist()
 }
 export async function deleteAccount(id) {
-  await db.accounts.delete(id)
-  await db.snapshots.where('accountId').equals(id).delete()
+  vault.accounts = vault.accounts.filter((a) => a.id !== id)
+  vault.snapshots = vault.snapshots.filter((s) => s.accountId !== id)
+  await persist()
 }
 
-// --- snapshots (one value per account+month) ---
-export function setSnapshot(accountId, month, value) {
-  return db.snapshots.put({ accountId, month, value })
+// --- snapshots (üks väärtus konto+kuu kohta) ---
+export async function setSnapshot(accountId, month, value) {
+  const s = vault.snapshots.find((x) => x.accountId === accountId && x.month === month)
+  if (s) s.value = value
+  else vault.snapshots.push({ accountId, month, value })
+  await persist()
 }
-export function getSnapshot(accountId, month) {
-  return db.snapshots.get([accountId, month])
+export async function getSnapshot(accountId, month) {
+  return vault.snapshots.find((s) => s.accountId === accountId && s.month === month)
 }
-export function snapshotsForMonth(month) {
-  return db.snapshots.where('month').equals(month).toArray()
+export async function snapshotsForMonth(month) {
+  return vault.snapshots.filter((s) => s.month === month)
 }
-export function allSnapshots() {
-  return db.snapshots.toArray()
+export async function allSnapshots() {
+  return [...vault.snapshots]
+}
+
+// --- reset ---
+export async function resetAll() {
+  vault = emptyVault()
+  await persist()
+  return vault.settings
 }

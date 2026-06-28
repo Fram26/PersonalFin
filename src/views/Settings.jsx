@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { saveSettings, resetAll } from '../db'
 
-export default function Settings({ settings, onSave, onClose }) {
+export default function Settings({ settings, onSave, onClose, onLock }) {
   const [income, setIncome] = useState(String(settings.income))
   const [pn, setPn] = useState(String(settings.pctNeeds))
   const [pw, setPw] = useState(String(settings.pctWants))
@@ -86,6 +86,7 @@ export default function Settings({ settings, onSave, onClose }) {
       </div>
 
       <button className="btn" onClick={save}>Salvesta</button>
+      <button className="btn ghost mt" onClick={onLock}>Lukusta app</button>
       <button className="btn ghost mt" onClick={onClose}>Tagasi</button>
     </>
   )
