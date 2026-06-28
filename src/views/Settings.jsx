@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { saveSettings, resetAll } from '../db'
+import { saveSettings, resetAll, changePassword } from '../db'
 
 export default function Settings({ settings, onSave, onClose, onLock }) {
   const [income, setIncome] = useState(String(settings.income))
@@ -18,6 +18,29 @@ export default function Settings({ settings, onSave, onClose, onLock }) {
   }
 
   const [confirmReset, setConfirmReset] = useState(false)
+
+  const [pwOpen, setPwOpen] = useState(false)
+  const [oldPw, setOldPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [newPw2, setNewPw2] = useState('')
+  const [pwMsg, setPwMsg] = useState('')
+  const [pwOk, setPwOk] = useState(false)
+
+  async function changePw() {
+    setPwMsg('')
+    setPwOk(false)
+    if (newPw.length < 4) return setPwMsg('Uus parool peab olema vähemalt 4 märki')
+    if (newPw !== newPw2) return setPwMsg('Uued paroolid ei kattu')
+    try {
+      await changePassword(oldPw, newPw)
+      setOldPw('')
+      setNewPw('')
+      setNewPw2('')
+      setPwOk(true)
+    } catch {
+      setPwMsg('Praegune parool on vale')
+    }
+  }
 
   async function reset() {
     const fresh = await resetAll()
@@ -68,6 +91,36 @@ export default function Settings({ settings, onSave, onClose, onLock }) {
           <label>Meeldetuletuse päev (kuu päev 1–28)</label>
           <input type="text" inputMode="numeric" value={notifyDay} onChange={(e) => setNotifyDay(e.target.value)} />
         </div>
+      </div>
+
+      <div className="card">
+        <h2>Parool</h2>
+        {!pwOpen ? (
+          <button className="btn ghost" onClick={() => { setPwOpen(true); setPwOk(false); setPwMsg('') }}>
+            Muuda parooli
+          </button>
+        ) : (
+          <>
+            <div className="field">
+              <label>Praegune parool</label>
+              <input type="password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Uus parool</label>
+              <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Korda uut parooli</label>
+              <input type="password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} />
+            </div>
+            {pwMsg && <div className="pct-warn">{pwMsg}</div>}
+            {pwOk && <div className="sub" style={{ color: 'var(--good)' }}>Parool muudetud ✓</div>}
+            <button className="btn mt" onClick={changePw}>Salvesta uus parool</button>
+            <button className="btn ghost mt" onClick={() => { setPwOpen(false); setOldPw(''); setNewPw(''); setNewPw2(''); setPwMsg(''); setPwOk(false) }}>
+              Loobu
+            </button>
+          </>
+        )}
       </div>
 
       <div className="card">

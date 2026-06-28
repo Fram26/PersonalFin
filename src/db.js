@@ -62,6 +62,16 @@ export function lock() {
   vault = null
 }
 
+export async function changePassword(oldPassword, newPassword) {
+  const sb = localStorage.getItem(SALT_KEY)
+  const oldKey = await deriveKey(oldPassword, fromB64(sb))
+  await decryptJSON(oldKey, localStorage.getItem(VAULT_KEY)) // viskab kui vana parool vale
+  const salt = randomBytes(16)
+  localStorage.setItem(SALT_KEY, toB64(salt))
+  key = await deriveKey(newPassword, salt)
+  await persist() // re-krüpteerib praeguse vault'i uue võtmega
+}
+
 // --- settings ---
 export async function getSettings() {
   return vault.settings
