@@ -1,0 +1,55 @@
+:root {
+  /* hele paber + igihaljas roheline */
+  --bg: #f2f4f1;
+  --surface: #ffffff;
+  --ink: #171a19;
+  --text: #171a19;
+  --muted: #6a726e;
+  --border: #e6e9e4;
+  --field: #f4f6f3;
+
+  --primary: #1f7a5e;
+  --primary-deep: #14513d;
+  --primary-soft: #e6f1ec;
+
+  --good: #1f7a5e;
+  --good-bg: #e6f1ec;
+  --warn: #ab7a2a;
+  --warn-bg: #f5ecd8;
+  --bad: #bf4658;
+  --bad-bg: #f8e6e9;
+  --ok: #3a6ea5;
+  --ok-bg: #e8eef7;
+
+  --bar-track: #eceee9;
+  --bar-needs: #2b3a36;
+  --bar-wants: #94a8a0;
+  --bar-savings: #1f7a5e;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
