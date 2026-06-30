@@ -536,6 +536,33 @@ li.off {
   color: var(--muted);
 }
 
+.bucket-split {
+  margin-top: 0.45rem;
+}
+
+/* expense tags */
+.tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.tag-needs {
+  background: rgba(43, 58, 54, 0.1);
+  color: var(--bar-needs);
+}
+.tag-wants {
+  background: rgba(148, 168, 160, 0.2);
+  color: #5f7268;
+}
+.tag-savings {
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+}
+
 /* bottom nav */
 .nav {
   position: fixed;

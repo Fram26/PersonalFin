@@ -31,13 +31,15 @@ Sihtprotsendid on muudetavad (vaikimisi 50/30/20).
 - Algväärtused seemnetakse kasutaja Exceli ("Igakuine eelarve") põhjal
   (vt punkt 7).
 
-### 4.2 Igakuine sisestus (auto-täidetud arvetega)
-Iga kuu kolm ämbrit, mis **täituvad automaatselt korduvatest arvetest**:
-- **vajadused** = vajaduste-arvete summa (eeltäidetud) + muutuvad kulud
-- **soovid** = soovide-arvete summa (eeltäidetud) + muutuvad kulud
-- **säästud / invest** = investeeringute igakuiste panuste summa (eeltäidetud)
+### 4.2 Kuu mudel (kolm kihti)
+Iga kuu ämbrite tegelik summa = **püsiarved + jooksvad kulud**:
+- **Püsiarved** (Arved vaade) — iga kuu samad, sead korra (üür, laen, kommunaalid)
+- **Jooksvad kulud** (Kuu vaade) — lisad kuu jooksul: summa + ämber
+  (vajadus/soov/sääst) + märkus
+- **Sissetulek** — muudetav iga kuu
 
-Kasutaja kohandab muutuvat osa. Lihtne, kiire, vähem topelt-tööd.
+Ämber: vajadused = needs-arved + needs-kulud; soovid = wants-arved + wants-kulud;
+säästud = investeeringupanused + sääst-kulud. Skoor = need tegelikud vs 50/30/20.
 
 ### 4.3 Kursihinnang
 Pärast sisestust app arvutab, kui hästi kurssi peeti:

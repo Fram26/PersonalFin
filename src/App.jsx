@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getSettings, saveSettings, listMonths, lock } from './db'
+import { getSettings, saveSettings, listMonths, allExpenses, lock } from './db'
 import { dueMonth, fireNotification } from './reminder'
 import { monthLabel } from './util'
 import Lock from './Lock'
@@ -32,9 +32,10 @@ function Main({ onLock }) {
   const [reminder, setReminder] = useState(null)
 
   useEffect(() => {
-    Promise.all([getSettings(), listMonths()]).then(([s, months]) => {
+    Promise.all([getSettings(), listMonths(), allExpenses()]).then(([s, months, expenses]) => {
       setSettings(s)
-      const due = dueMonth(s, months.map((m) => m.month))
+      const entered = new Set([...months.map((m) => m.month), ...expenses.map((e) => e.month)])
+      const due = dueMonth(s, [...entered])
       if (due) {
         setReminder(due)
         if (s.notify && s.lastNotified !== due) {

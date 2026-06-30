@@ -1,17 +1,29 @@
 import { useEffect, useState } from 'react'
-import { listMonths } from '../db'
+import { listMonths, listBills, listAccounts, allExpenses } from '../db'
 import { evaluate, pct } from '../score'
+import { monthBuckets } from '../compute'
 import { monthLabel, eur } from '../util'
 import { LineChart, ChartLabels } from '../Chart'
 
 export default function History({ settings }) {
-  const [months, setMonths] = useState([])
+  const [rows, setRows] = useState(null)
 
   useEffect(() => {
-    listMonths().then(setMonths)
-  }, [])
+    Promise.all([listMonths(), listBills(), listAccounts(), allExpenses()]).then(
+      ([months, bills, accounts, expenses]) => {
+        const data = months.map((m) => {
+          const ex = expenses.filter((e) => e.month === m.month)
+          const buckets = monthBuckets(bills, accounts, ex)
+          const monthData = { income: m.income, ...buckets }
+          return { month: m.month, ...monthData, e: evaluate(monthData, settings) }
+        })
+        setRows(data)
+      }
+    )
+  }, [settings])
 
-  if (months.length === 0) {
+  if (!rows) return null
+  if (rows.length === 0) {
     return (
       <div className="card">
         <p className="empty">Ajalugu on tühi. Sisesta esimene kuu vaates "Kuu".</p>
@@ -19,12 +31,11 @@ export default function History({ settings }) {
     )
   }
 
-  const evals = months.map((m) => ({ m, e: evaluate(m, settings) }))
-  const avg = Math.round(evals.reduce((s, x) => s + x.e.total, 0) / evals.length)
-  const avgSavings = Math.round(months.reduce((s, m) => s + pct(m.savings, m.income), 0) / months.length)
+  const avg = Math.round(rows.reduce((s, x) => s + x.e.total, 0) / rows.length)
+  const avgSavings = Math.round(rows.reduce((s, x) => s + pct(x.savings, x.income), 0) / rows.length)
 
-  const chron = [...evals].reverse()
-  const scoreData = chron.map((x) => ({ label: monthLabel(x.m.month).split(' ')[0].slice(0, 3), value: x.e.total }))
+  const chron = [...rows].reverse()
+  const scoreData = chron.map((x) => ({ label: monthLabel(x.month).split(' ')[0].slice(0, 3), value: x.e.total }))
 
   return (
     <>
@@ -50,16 +61,16 @@ export default function History({ settings }) {
       <div className="card">
         <h2>Kuud</h2>
         <ul className="hist">
-          {evals.map(({ m, e }) => (
-            <li key={m.month}>
+          {rows.map((x) => (
+            <li key={x.month}>
               <div style={{ flex: 1 }}>
-                <div className="m">{monthLabel(m.month)}</div>
+                <div className="m">{monthLabel(x.month)}</div>
                 <div className="sub">
-                  {pct(m.needs, m.income)} / {pct(m.wants, m.income)} / {pct(m.savings, m.income)} ·
-                  {' '}säästsid {eur(m.savings)}
+                  {pct(x.needs, x.income)} / {pct(x.wants, x.income)} / {pct(x.savings, x.income)} ·
+                  {' '}säästsid {eur(x.savings)}
                 </div>
               </div>
-              <span className={`badge tone-${e.rating.tone}`}>{e.total}</span>
+              <span className={`badge tone-${x.e.rating.tone}`}>{x.e.total}</span>
             </li>
           ))}
         </ul>

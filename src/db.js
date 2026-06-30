@@ -17,7 +17,7 @@ let key = null
 let vault = null
 
 function emptyVault() {
-  return { settings: { ...DEFAULT_SETTINGS }, months: [], bills: [], accounts: [], snapshots: [], seq: 1 }
+  return { settings: { ...DEFAULT_SETTINGS }, months: [], bills: [], accounts: [], snapshots: [], expenses: [], seq: 1 }
 }
 
 export function hasVault() {
@@ -166,6 +166,24 @@ export async function snapshotsForMonth(month) {
 }
 export async function allSnapshots() {
   return [...vault.snapshots]
+}
+
+// --- expenses (jooksvad kulud kuu kaupa) ---
+export async function listExpenses(month) {
+  return vault.expenses.filter((e) => e.month === month)
+}
+export async function allExpenses() {
+  return [...vault.expenses]
+}
+export async function addExpense(exp) {
+  const rec = { id: vault.seq++, ...exp }
+  vault.expenses.push(rec)
+  await persist()
+  return rec.id
+}
+export async function deleteExpense(id) {
+  vault.expenses = vault.expenses.filter((e) => e.id !== id)
+  await persist()
 }
 
 // --- reset ---
