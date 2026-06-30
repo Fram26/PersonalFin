@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { hasVault, setupPassword, unlock } from './db'
+import { hasVault, setupPassword, unlock, wipe } from './db'
 import { hasCrypto } from './crypto'
 
 export default function Lock({ onUnlocked }) {
-  const setup = !hasVault()
+  const [setup, setSetup] = useState(!hasVault())
   const [pw, setPw] = useState('')
   const [pw2, setPw2] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   if (!hasCrypto()) {
     return (
@@ -44,6 +45,15 @@ export default function Lock({ onUnlocked }) {
     }
   }
 
+  function reset() {
+    wipe()
+    setSetup(true)
+    setConfirmReset(false)
+    setPw('')
+    setPw2('')
+    setErr('')
+  }
+
   return (
     <div className="lock">
       <form className="lock-card" onSubmit={submit}>
@@ -78,6 +88,29 @@ export default function Lock({ onUnlocked }) {
           {busy ? '...' : setup ? 'Loo parool' : 'Ava'}
         </button>
       </form>
+
+      {!setup && (
+        <div className="lock-forgot">
+          {!confirmReset ? (
+            <button type="button" className="link-btn" onClick={() => setConfirmReset(true)}>
+              Unustasid parooli?
+            </button>
+          ) : (
+            <div className="lock-card lock-reset">
+              <p className="sub">
+                Lähtestamine kustutab kõik andmed selles seadmes jäädavalt ja saad seada uue
+                parooli. Andmeid ei saa tagasi.
+              </p>
+              <button type="button" className="btn danger-solid" onClick={reset}>
+                Lähtesta ja kustuta andmed
+              </button>
+              <button type="button" className="btn ghost mt" onClick={() => setConfirmReset(false)}>
+                Loobu
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

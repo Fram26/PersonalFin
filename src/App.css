@@ -8,9 +8,22 @@
 .lock {
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
   padding: 1.5rem;
+}
+.lock-forgot {
+  text-align: center;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  padding: 0.5rem;
 }
 .lock-card {
   width: 100%;

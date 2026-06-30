@@ -62,6 +62,19 @@ export function lock() {
   vault = null
 }
 
+// Lähtestamine kui parool unustatud: kustutab krüpteeritud andmed jäädavalt.
+export function wipe() {
+  localStorage.removeItem(VAULT_KEY)
+  localStorage.removeItem(SALT_KEY)
+  try {
+    indexedDB.deleteDatabase('personalfin')
+  } catch {
+    // ignore
+  }
+  key = null
+  vault = null
+}
+
 export async function changePassword(oldPassword, newPassword) {
   const sb = localStorage.getItem(SALT_KEY)
   const oldKey = await deriveKey(oldPassword, fromB64(sb))
