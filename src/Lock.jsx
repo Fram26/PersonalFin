@@ -9,6 +9,8 @@ export default function Lock({ onUnlocked }) {
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [taps, setTaps] = useState(0)
+  const showForgot = taps >= 5
 
   if (!hasCrypto()) {
     return (
@@ -57,7 +59,7 @@ export default function Lock({ onUnlocked }) {
   return (
     <div className="lock">
       <form className="lock-card" onSubmit={submit}>
-        <h1>PersonalFin</h1>
+        <h1 onClick={() => setTaps((t) => t + 1)}>PersonalFin</h1>
         <p className="sub">{setup ? 'Loo parool oma andmete kaitseks' : 'Sisesta parool'}</p>
 
         <input
@@ -89,7 +91,7 @@ export default function Lock({ onUnlocked }) {
         </button>
       </form>
 
-      {!setup && (
+      {!setup && showForgot && (
         <div className="lock-forgot">
           {!confirmReset ? (
             <button type="button" className="link-btn" onClick={() => setConfirmReset(true)}>
