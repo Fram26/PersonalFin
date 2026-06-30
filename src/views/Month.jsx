@@ -41,7 +41,8 @@ export default function Month({ settings }) {
   const savings = sumContrib(accounts)
 
   const draft = { income: inc, needs, wants, savings }
-  const e = inc > 0 ? evaluate(draft, settings) : null
+  const hasData = needs > 0 || wants > 0 || savings > 0
+  const e = inc > 0 && hasData ? evaluate(draft, settings) : null
 
   async function submit() {
     await saveMonth({ month, ...draft })
@@ -65,6 +66,15 @@ export default function Month({ settings }) {
       {e && (
         <div className="card ring-card">
           <Ring value={e.total} tone={e.rating.tone} label={e.rating.label} />
+        </div>
+      )}
+
+      {!hasData && (
+        <div className="card">
+          <p className="empty">
+            Lisa kõigepealt arved (vaade "Arved") ja investeeringud (vaade "Vara") —
+            siis arvutab app 50/30/20 skoori.
+          </p>
         </div>
       )}
 
