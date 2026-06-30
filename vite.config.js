@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'PersonalFin',
         short_name: 'PersonalFin',
         description: 'Isiklik rahaarvestus',
-        theme_color: '#1f7a5e',
+        theme_color: '#0fa882',
         background_color: '#f2f4f1',
         display: 'standalone',
         scope: '/PersonalFin/',

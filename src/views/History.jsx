@@ -42,7 +42,7 @@ export default function History({ settings }) {
       {scoreData.length >= 2 && (
         <div className="card">
           <h2>Skoori trend</h2>
-          <LineChart data={scoreData} color="#1f7a5e" />
+          <LineChart data={scoreData} color="#0fa882" />
           <ChartLabels data={scoreData} />
         </div>
       )}

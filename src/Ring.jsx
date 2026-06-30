@@ -1,5 +1,5 @@
 const TONE = {
-  good: '#1f7a5e',
+  good: '#0fa882',
   ok: '#3a6ea5',
   warn: '#ab7a2a',
   bad: '#bf4658',

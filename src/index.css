@@ -8,12 +8,12 @@
   --border: #e6e9e4;
   --field: #f4f6f3;
 
-  --primary: #1f7a5e;
-  --primary-deep: #14513d;
-  --primary-soft: #e6f1ec;
+  --primary: #0fa882;
+  --primary-deep: #0a6e56;
+  --primary-soft: #e3f6f0;
 
-  --good: #1f7a5e;
-  --good-bg: #e6f1ec;
+  --good: #0fa882;
+  --good-bg: #e3f6f0;
   --warn: #ab7a2a;
   --warn-bg: #f5ecd8;
   --bad: #bf4658;
@@ -24,7 +24,7 @@
   --bar-track: #eceee9;
   --bar-needs: #2b3a36;
   --bar-wants: #94a8a0;
-  --bar-savings: #1f7a5e;
+  --bar-savings: #0fa882;
 
   color-scheme: light;
 }

@@ -100,7 +100,7 @@ export default function Invest() {
           </div>
           <div className="card">
             <h2>Investeeringud trend</h2>
-            <LineChart data={invData} color="#1f7a5e" />
+            <LineChart data={invData} color="#0fa882" />
             <ChartLabels data={invData} />
             <p className="sub" style={{ marginTop: '0.5rem' }}>
               Igakuine panus: <strong>{eur(monthlyContrib)}</strong>
