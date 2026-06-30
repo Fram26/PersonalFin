@@ -25,3 +25,7 @@ export function eur(n) {
     maximumFractionDigits: 0,
   })
 }
+
+export function money(n, mask) {
+  return mask ? '••••' : eur(n)
+}

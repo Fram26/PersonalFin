@@ -348,6 +348,72 @@ select:focus {
   font-variant-numeric: tabular-nums;
 }
 
+/* topbar actions */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+/* donut */
+.donut-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0.4rem 0 1.2rem;
+}
+.donut {
+  display: block;
+}
+.donut-num {
+  font-size: 2.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.donut-sub {
+  font-size: 0.8rem;
+  font-weight: 600;
+  fill: var(--muted);
+}
+.legend {
+  display: flex;
+  flex-direction: column;
+}
+.leg-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border);
+}
+.leg-row:first-child {
+  border-top: none;
+}
+.leg-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.leg-name {
+  font-weight: 600;
+  flex: 1;
+}
+.leg-amt {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.leg-pct {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 4.6rem;
+  text-align: right;
+}
+.masked {
+  color: var(--muted);
+  letter-spacing: 0.12em;
+}
+
 /* chart */
 .chart {
   width: 100%;

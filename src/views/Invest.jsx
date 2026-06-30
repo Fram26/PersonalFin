@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { listAccounts, allSnapshots, setSnapshot, addAccount, deleteAccount } from '../db'
-import { monthKey, monthLabel, shiftMonth, eur } from '../util'
+import { monthKey, monthLabel, shiftMonth, eur, money } from '../util'
 import { LineChart, ChartLabels } from '../Chart'
 import Icon from '../Icon'
 
@@ -17,7 +17,7 @@ function lastValueBefore(snaps, accountId, month, defaultValue) {
   return prior.length ? prior[0].value : defaultValue
 }
 
-export default function Invest() {
+export default function Invest({ mask }) {
   const [month, setMonth] = useState(monthKey())
   const [accounts, setAccounts] = useState([])
   const [snaps, setSnaps] = useState([])
@@ -83,11 +83,11 @@ export default function Invest() {
       <div className="card stat-card">
         <div className="stat">
           <span className="stat-label">Netovara</span>
-          <span className="stat-num">{eur(netWorth)}</span>
+          <span className="stat-num">{money(netWorth, mask)}</span>
         </div>
         <div className="stat">
           <span className="stat-label">Investeeringud</span>
-          <span className="stat-num">{eur(investTotal)}</span>
+          <span className="stat-num">{money(investTotal, mask)}</span>
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function Invest() {
             <LineChart data={invData} color="#0fa882" />
             <ChartLabels data={invData} />
             <p className="sub" style={{ marginTop: '0.5rem' }}>
-              Igakuine panus: <strong>{eur(monthlyContrib)}</strong>
+              Igakuine panus: <strong>{money(monthlyContrib, mask)}</strong>
             </p>
           </div>
         </>
@@ -120,12 +120,12 @@ export default function Invest() {
         if (list.length === 0) return null
         return (
           <div className="card" key={g.key}>
-            <h2>{g.title} · {eur(sumGroup(g.key))}</h2>
+            <h2>{g.title} · {money(sumGroup(g.key), mask)}</h2>
             {list.map((a) => (
               <div className="acc-row" key={a.id}>
                 <div className="acc-name">
                   {a.name}
-                  {a.contribution > 0 && <span className="sub"> +{eur(a.contribution)}/k</span>}
+                  {a.contribution > 0 && <span className="sub"> +{money(a.contribution, mask)}/k</span>}
                 </div>
                 <input
                   type="text"

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { listMonths, listBills, listAccounts, allExpenses } from '../db'
 import { evaluate, pct } from '../score'
 import { monthBuckets } from '../compute'
-import { monthLabel, eur } from '../util'
+import { monthLabel, money } from '../util'
 import { LineChart, ChartLabels } from '../Chart'
 
-export default function History({ settings }) {
+export default function History({ settings, mask }) {
   const [rows, setRows] = useState(null)
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function History({ settings }) {
                 <div className="m">{monthLabel(x.month)}</div>
                 <div className="sub">
                   {pct(x.needs, x.income)} / {pct(x.wants, x.income)} / {pct(x.savings, x.income)} ·
-                  {' '}säästsid {eur(x.savings)}
+                  {' '}säästsid {money(x.savings, mask)}
                 </div>
               </div>
               <span className={`badge tone-${x.e.rating.tone}`}>{x.e.total}</span>

@@ -1,25 +1,22 @@
 import { useEffect, useState } from 'react'
 import { getMonth, saveMonth, listBills, listAccounts, listExpenses, addExpense, deleteExpense } from '../db'
 import { evaluate, targets, pct } from '../score'
-import { monthBuckets, billsSum, contribSum } from '../compute'
-import { monthKey, monthLabel, shiftMonth, eur } from '../util'
-import Ring from '../Ring'
+import { monthBuckets } from '../compute'
+import { monthKey, monthLabel, shiftMonth, money } from '../util'
+import Donut from '../Donut'
 import Icon from '../Icon'
 
-const BUCKETS = [
-  { key: 'needs', name: 'Vajadused', pctKey: 'pctNeeds' },
-  { key: 'wants', name: 'Soovid', pctKey: 'pctWants' },
-  { key: 'savings', name: 'Säästud', pctKey: 'pctSavings' },
-]
+const COLORS = { needs: '#2b3a36', wants: '#8aa6a0', savings: '#0fa882', rest: '#e3e6e1' }
+const BUCKET_NAME = { needs: 'Vajadus', wants: 'Soov', savings: 'Sääst' }
+const TONE = { good: '#0fa882', ok: '#3a6ea5', warn: '#ab7a2a', bad: '#bf4658' }
 
-export default function Month({ settings }) {
+export default function Month({ settings, mask }) {
   const [month, setMonth] = useState(monthKey())
   const [bills, setBills] = useState([])
   const [accounts, setAccounts] = useState([])
   const [expenses, setExpenses] = useState([])
   const [income, setIncome] = useState(String(settings.income))
 
-  // kulu vorm
   const [amount, setAmount] = useState('')
   const [bucket, setBucket] = useState('needs')
   const [note, setNote] = useState('')
@@ -42,6 +39,7 @@ export default function Month({ settings }) {
   const inc = num(income)
   const t = targets(inc, settings)
   const b = monthBuckets(bills, accounts, expenses)
+  const rest = Math.max(0, inc - b.needs - b.wants - b.savings)
   const hasData = b.needs > 0 || b.wants > 0 || b.savings > 0
   const e = inc > 0 && hasData ? evaluate({ income: inc, ...b }, settings) : null
 
@@ -51,9 +49,8 @@ export default function Month({ settings }) {
   }
 
   async function addKulu() {
-    const val = num(amount)
-    if (!val) return
-    await addExpense({ month, bucket, amount: val, note: note.trim() })
+    if (!num(amount)) return
+    await addExpense({ month, bucket, amount: num(amount), note: note.trim() })
     setAmount('')
     setNote('')
     setExpenses(await listExpenses(month))
@@ -64,9 +61,12 @@ export default function Month({ settings }) {
     setExpenses(await listExpenses(month))
   }
 
-  // jooksvad kulud ämbri kaupa (näitamiseks)
-  const running = (k) => expenses.filter((x) => x.bucket === k).reduce((s, x) => s + x.amount, 0)
-  const fixed = { needs: billsSum(bills, 'needs'), wants: billsSum(bills, 'wants'), savings: contribSum(accounts) }
+  const segments = [
+    { label: 'Vajadused', value: b.needs, color: COLORS.needs, target: settings.pctNeeds },
+    { label: 'Soovid', value: b.wants, color: COLORS.wants, target: settings.pctWants },
+    { label: 'Säästud', value: b.savings, color: COLORS.savings, target: settings.pctSavings },
+    { label: 'Jääk', value: rest, color: COLORS.rest, target: null },
+  ]
 
   return (
     <>
@@ -76,45 +76,42 @@ export default function Month({ settings }) {
         <button onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Järgmine">›</button>
       </div>
 
-      {e && (
-        <div className="card ring-card">
-          <Ring value={e.total} tone={e.rating.tone} label={e.rating.label} />
-        </div>
-      )}
-
       <div className="card">
-        <h2>Sissetulek</h2>
-        <input
-          className="big-input"
-          type="text"
-          inputMode="decimal"
-          value={income}
-          onChange={(ev) => changeIncome(ev.target.value)}
-        />
+        <div className="donut-wrap">
+          <Donut
+            segments={segments}
+            centerTop={e ? e.total : null}
+            centerSub={e ? e.rating.label : null}
+            centerColor={e ? TONE[e.rating.tone] : undefined}
+          />
+        </div>
+        <div className="legend">
+          {segments.map((s) => (
+            <div className="leg-row" key={s.label}>
+              <span className="leg-dot" style={{ background: s.color }} />
+              <span className="leg-name">{s.label}</span>
+              <span className="leg-amt">{money(s.value, mask)}</span>
+              <span className="leg-pct">
+                {pct(s.value, inc)}%{s.target != null && ` / ${s.target}%`}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="card">
-        <h2>50/30/20</h2>
-        {BUCKETS.map((bk) => {
-          const value = b[bk.key]
-          const target = t[bk.key]
-          const filled = target > 0 ? Math.min(100, (value / target) * 100) : 0
-          return (
-            <div className="bucket" key={bk.key}>
-              <div className="row">
-                <span className="name">{bk.name}</span>
-                <span className="amount">{eur(value)}</span>
-              </div>
-              <div className="bucket-foot">
-                <div className={`bar ${bk.key}`}><span style={{ width: `${filled}%` }} /></div>
-                <span className="target">{pct(value, inc)}% / {settings[bk.pctKey]}%</span>
-              </div>
-              <div className="sub bucket-split">
-                {bk.key === 'savings' ? 'panused' : 'arved'} {eur(fixed[bk.key])} · jooksvad {eur(running(bk.key))}
-              </div>
-            </div>
-          )
-        })}
+        <h2>Sissetulek</h2>
+        {mask ? (
+          <div className="big-input masked">••••</div>
+        ) : (
+          <input
+            className="big-input"
+            type="text"
+            inputMode="decimal"
+            value={income}
+            onChange={(ev) => changeIncome(ev.target.value)}
+          />
+        )}
       </div>
 
       <div className="card">
@@ -147,9 +144,9 @@ export default function Month({ settings }) {
           <ul className="hist" style={{ marginTop: '0.5rem' }}>
             {expenses.map((x) => (
               <li key={x.id}>
-                <span className={`tag tag-${x.bucket}`}>{BUCKETS.find((k) => k.key === x.bucket).name}</span>
+                <span className={`tag tag-${x.bucket}`}>{BUCKET_NAME[x.bucket]}</span>
                 <div style={{ flex: 1 }}>
-                  <div className="m">{eur(x.amount)}</div>
+                  <div className="m">{money(x.amount, mask)}</div>
                   {x.note && <div className="sub">{x.note}</div>}
                 </div>
                 <button className="del" onClick={() => removeKulu(x.id)} aria-label="Kustuta">×</button>

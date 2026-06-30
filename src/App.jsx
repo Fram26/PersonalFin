@@ -30,6 +30,7 @@ function Main({ onLock }) {
   const [view, setView] = useState('month')
   const [settings, setSettings] = useState(null)
   const [reminder, setReminder] = useState(null)
+  const [mask, setMask] = useState(false)
 
   useEffect(() => {
     Promise.all([getSettings(), listMonths(), allExpenses()]).then(([s, months, expenses]) => {
@@ -52,9 +53,14 @@ function Main({ onLock }) {
     <div className="app">
       <div className="topbar">
         <h1>PersonalFin</h1>
-        <button className="gear" onClick={() => setView('settings')} aria-label="Seaded">
-          <Icon name="settings" size={22} />
-        </button>
+        <div className="topbar-actions">
+          <button className="gear" onClick={() => setMask((m) => !m)} aria-label="Peida summad">
+            <Icon name={mask ? 'eye-off' : 'eye'} size={21} />
+          </button>
+          <button className="gear" onClick={() => setView('settings')} aria-label="Seaded">
+            <Icon name="settings" size={22} />
+          </button>
+        </div>
       </div>
 
       {reminder && view !== 'month' && (
@@ -65,10 +71,10 @@ function Main({ onLock }) {
         </button>
       )}
 
-      {view === 'month' && <Month settings={settings} />}
+      {view === 'month' && <Month settings={settings} mask={mask} />}
       {view === 'bills' && <Bills />}
-      {view === 'invest' && <Invest />}
-      {view === 'history' && <History settings={settings} />}
+      {view === 'invest' && <Invest mask={mask} />}
+      {view === 'history' && <History settings={settings} mask={mask} />}
       {view === 'settings' && (
         <Settings
           settings={settings}
