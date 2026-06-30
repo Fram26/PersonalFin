@@ -32,7 +32,7 @@ export default function Donut({ segments, size = 180, stroke = 26, centerTop, ce
           })}
       </g>
       {centerTop != null && (
-        <text x="50%" y="45%" textAnchor="middle" dominantBaseline="central" className="donut-num" style={{ fill: centerColor || 'var(--ink)' }}>
+        <text x="50%" y={centerSub ? '45%' : '50%'} textAnchor="middle" dominantBaseline="central" className="donut-num" style={{ fill: centerColor || 'var(--ink)' }}>
           {centerTop}
         </text>
       )}

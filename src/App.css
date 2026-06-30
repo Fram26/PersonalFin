@@ -365,9 +365,8 @@ select:focus {
   display: block;
 }
 .donut-num {
-  font-size: 2.3rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 .donut-sub {
   font-size: 0.8rem;

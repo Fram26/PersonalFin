@@ -80,8 +80,7 @@ export default function Month({ settings, mask }) {
         <div className="donut-wrap">
           <Donut
             segments={segments}
-            centerTop={e ? e.total : null}
-            centerSub={e ? e.rating.label : null}
+            centerTop={e ? e.rating.label : null}
             centerColor={e ? TONE[e.rating.tone] : undefined}
           />
         </div>
